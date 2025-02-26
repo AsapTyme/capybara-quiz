@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>What Capybara Are You?</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cormorant:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Nunito+Sans:ital,opsz,wght@0,6..12,200..1000;1,6..12,200..1000&family=Russo+One&family=Teko:wght@300..700&display=swap');
+
+
+        body {
+            background-color: #f5bcd0;
+            font-family: 'Nunito Sans', sans-serif;
+        }
+        .quiz-container {
+            background-color: #FFF8E6;
+            border-radius: 20px;
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            border: 3px solid #a68252;
+        }
+        .btn-option {
+            background-color: #e6c399;
+            border: 2px solid #A67C52;
+            transition: all 0.3s ease;
+        }
+        .btn-option:hover {
+            background-color: #D4B483;
+            transform: translateY(-3px);
+        }
+        .btn-option:active {
+            transform: translateY(0px);
+        }
+        .progress-bar {
+            height: 10px;
+            background-color: #E6C799;
+            border-radius: 5px;
+        }
+        .title-font {
+            color: #6B4226;
+        }
+        .question-text {
+            color: #6B4226;
+        }
+        #result-container {
+            display: none;
+        }
+        .restart-btn {
+            background-color: #A67C52;
+            color: white;
+            transition: all 0.3s ease;
+        }
+        .restart-btn:hover {
+            background-color: #8B5A2B;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-2xl">
+        <!-- Quiz intro page -->
+        <div id="intro-container" class="quiz-container p-8 text-center">
+            <h1 class="text-4xl font-bold mb-6 title-font">What Capybara Are You?</h1>
+            <p class="mb-8 text-lg">Lulu asked for this and I do as I am told. But we thought the sunday swimmers would enjoy. Sorry if it's boring!</p>
+            <button id="start-btn" class="px-8 py-3 text-xl btn-option rounded-full font-bold">Start Quiz!</button>
+        </div>
+
+        <!-- Quiz questions container -->
+        <div id="quiz-container" class="quiz-container p-8 text-center hidden">
+            <div class="mb-6 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div id="progress-bar" class="progress-bar" style="width: 0%"></div>
+            </div>
+            <h2 id="question-number" class="text-xl mb-2 title-font">Question 1/10</h2>
+            <h1 id="question-text" class="text-3xl font-bold mb-8 question-text">Loading question...</h1>
+            
+            <div id="options-container" class="grid gap-4">
+                <!-- Options will be inserted here -->
+            </div>
+        </div>
+
+        <!-- Results container -->
+        <div id="result-container" class="quiz-container p-8 text-center">
+            <h1 class="text-4xl font-bold mb-4 title-font">Your Capybara Result</h1>
+            <h2 id="result-title" class="text-3xl mb-6 title-font">Loading result...</h2>
+            <img id="result-image" src="/api/placeholder/300/300" alt="Result capybara" class="rounded-lg mx-auto mb-6">
+            <p id="result-description" class="mb-8 text-lg">Loading description...</p>
+            <button id="restart-btn" class="px-8 py-3 text-xl restart-btn rounded-full font-bold">Take Quiz Again</button>
+            <div class="mt-8">
+                <a href="#" class="text-blue-600 hover:underline" onclick="shareResult(); return false;">Share Your Result</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz questions and options
+        const questions = [
+            {
+                question: "How would you retake a site 1v3?",
+                options: [
+                    { text: "Flashbang it and swing", points: { relaxed: 0, social: 1, adventurous: 2, foodie: 0, playful: 0 } },
+                    { text: "Clear every angle slowly", points: { relaxed: 2, social: 0, adventurous: 2, foodie: 0, playful: 0 } },
+                    { text: "Pick up a deagle and clipfarm", points: { relaxed: 0, social: 2, adventurous: 0, foodie: 2, playful: 0 } },
+                    { text: "Save your weapon for next round", points: { relaxed: 2, social: 1, adventurous: 0, foodie: 0, playful: 0 } }
+                ]
+            },
+            {
+                question: "How do you handle stress?",
+                options: [
+                    { text: "Take a nap or meditate", points: { relaxed: 2, social: 0, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "Talk it out with friends", points: { relaxed: 0, social: 2, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "Exercise or get moving", points: { relaxed: 0, social: 0, adventurous: 1, foodie: 0, playful: 2 } },
+                    { text: "Eat something delicious", points: { relaxed: 1, social: 0, adventurous: 0, foodie: 2, playful: 0 } }
+                ]
+            },
+            {
+                question: "What's your approach to trying new foods?",
+                options: [
+                    { text: "I'll try anything once!", points: { relaxed: 0, social: 1, adventurous: 2, foodie: 1, playful: 0 } },
+                    { text: "I stick to my favorites", points: { relaxed: 2, social: 0, adventurous: 0, foodie: 1, wise: 0 } },
+                    { text: "I research the best options first", points: { relaxed: 0, social: 0, adventurous: 0, foodie: 2, wise: 1 } },
+                    { text: "I'll have what my friends are having", points: { relaxed: 0, social: 2, adventurous: 0, foodie: 0, playful: 1 } }
+                ]
+            },
+            {
+                question: "Favorite strat?",
+                options: [
+                    { text: "Sunday Swimmers", points: { relaxed: 2, social: 2, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "Ten Hut", points: { relaxed: 0, social: 0, adventurous: 2, foodie: 0, playful: 1 } },
+                    { text: "Hold Palace", points: { relaxed: 1, social: 0, adventurous: 0, foodie: 0, playful: 1 } },
+                    { text: "Smoke Ticket", points: { relaxed: 0, social: 0, adventurous: 1, foodie: 0, wise: 2 } }
+                ]
+            },
+            {
+                question: "What's your favorite weather?",
+                options: [
+                    { text: "Warm and sunny", points: { relaxed: 1, social: 1, adventurous: 1, foodie: 0, playful: 0 } },
+                    { text: "Rainy and cozy", points: { relaxed: 2, social: 0, adventurous: 0, foodie: 1, wise: 0 } },
+                    { text: "Cool and breezy", points: { relaxed: 1, social: 0, adventurous: 2, foodie: 0, playful: 0 } },
+                    { text: "Hot and tropical", points: { relaxed: 0, social: 0, adventurous: 1, foodie: 0, playful: 2 } }
+                ]
+            },
+            {
+                question: "How do you feel about water?",
+                options: [
+                    { text: "I love swimming!", points: { relaxed: 0, social: 0, adventurous: 1, foodie: 0, playful: 2 } },
+                    { text: "I prefer lounging near it", points: { relaxed: 2, social: 1, adventurous: 0, foodie: 0, wise: 0 } },
+                    { text: "I enjoy water sports", points: { relaxed: 0, social: 1, adventurous: 2, foodie: 0, playful: 0 } },
+                    { text: "I'm not a big fan of water", points: { relaxed: 1, social: 0, adventurous: 0, foodie: 1, wise: 1 } }
+                ]
+            },
+            {
+                question: "What's your approach to group situations?",
+                options: [
+                    { text: "I'm the life of the party", points: { relaxed: 0, social: 2, adventurous: 1, foodie: 0, playful: 1 } },
+                    { text: "I enjoy observing others", points: { relaxed: 1, social: 0, adventurous: 0, foodie: 0, wise: 2 } },
+                    { text: "I like small, intimate gatherings", points: { relaxed: 1, social: 1, adventurous: 0, foodie: 1, wise: 0 } },
+                    { text: "I'm the first to suggest activities", points: { relaxed: 0, social: 1, adventurous: 2, foodie: 0, playful: 0 } }
+                ]
+            },
+            {
+                question: "What do you value most in life?",
+                options: [
+                    { text: "Peace and harmony", points: { relaxed: 2, social: 0, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "Strong relationships", points: { relaxed: 0, social: 2, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "New experiences", points: { relaxed: 0, social: 0, adventurous: 2, foodie: 0, playful: 1 } },
+                    { text: "Simple pleasures", points: { relaxed: 1, social: 0, adventurous: 0, foodie: 2, playful: 0 } }
+                ]
+            },
+            {
+                question: "How do you spend your free time?",
+                options: [
+                    { text: "Reading or learning new things", points: { relaxed: 1, social: 0, adventurous: 0, foodie: 0, wise: 2 } },
+                    { text: "Cooking or trying new restaurants", points: { relaxed: 0, social: 1, adventurous: 0, foodie: 2, playful: 0 } },
+                    { text: "Outdoor activities and sports", points: { relaxed: 0, social: 0, adventurous: 2, foodie: 0, playful: 1 } },
+                    { text: "Hanging out with friends", points: { relaxed: 0, social: 2, adventurous: 0, foodie: 0, playful: 1 } }
+                ]
+            },
+            {
+                question: "Which superpower would you choose?",
+                options: [
+                    { text: "Teleportation", points: { relaxed: 0, social: 0, adventurous: 2, foodie: 0, playful: 1 } },
+                    { text: "Mind reading", points: { relaxed: 0, social: 2, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "Healing abilities", points: { relaxed: 1, social: 1, adventurous: 0, foodie: 0, wise: 1 } },
+                    { text: "Time manipulation", points: { relaxed: 2, social: 0, adventurous: 0, foodie: 0, playful: 1 } }
+                ]
+            }
+        ];
+
+        // Capybara results
+        const results = [
+            {
+                id: "zen-capybara",
+                title: "Zen Capybara",
+                description: "You're the Zen Capybara! Calm, peaceful, and wise beyond your years. You take life at your own pace and are a calming presence for everyone around you. Your ability to stay relaxed in any situation is your superpower!"
+            },
+            {
+                id: "social-capybara",
+                title: "Social Butterfly Capybara",
+                description: "You're the Social Butterfly Capybara! Friendly, outgoing, and always surrounded by friends. You thrive in group settings and have a knack for bringing people together. Your positive energy is contagious!"
+            },
+            {
+                id: "adventurous-capybara",
+                title: "Adventurous Capybara",
+                description: "You're the Adventurous Capybara! Bold, curious, and always seeking new experiences. You're not afraid to explore beyond your comfort zone and inspire others with your courage and spirit!"
+            },
+            {
+                id: "foodie-capybara",
+                title: "Foodie Capybara",
+                description: "You're the Foodie Capybara! With a refined palate and appreciation for life's delicious pleasures. You know that good food brings people together, and you enjoy every meal to the fullest!"
+            },
+            {
+                id: "playful-capybara",
+                title: "Playful Capybara",
+                description: "You're the Playful Capybara! Full of energy, joy, and a childlike spirit. You approach life as one big playground and remind everyone around you not to take things too seriously!"
+            },
+            {
+                id: "wise-capybara",
+                title: "Wise Capybara",
+                description: "You're the Wise Capybara! Thoughtful, observant, and full of insights. People come to you for advice, and you're able to see situations from multiple perspectives. Your wisdom is a gift to everyone around you!"
+            },
+            {
+                id: "beach-capybara",
+                title: "Beach Capybara",
+                description: "You're the Beach Capybara! Laid-back, sun-loving, and always ready for a dip. You know the importance of balance between relaxation and play, and you make every day feel like a vacation!"
+            },
+            {
+                id: "royal-capybara",
+                title: "Royal Capybara",
+                description: "You're the Royal Capybara! Dignified, confident, and with a natural air of leadership. You know your worth and inspire others to stand tall. Your regal presence commands respect wherever you go!"
+            },
+            {
+                id: "artistic-capybara",
+                title: "Artistic Capybara",
+                description: "You're the Artistic Capybara! Creative, expressive, and with a unique view of the world. You see beauty in the everyday and inspire others with your imaginative spirit and original ideas!"
+            },
+            {
+                id: "cosmic-capybara",
+                title: "Cosmic Capybara",
+                description: "You're the Cosmic Capybara! Mysterious, philosophical, and connected to something greater. You ponder the big questions and help others see beyond the ordinary. Your spiritual depth makes you truly special!"
+            }
+        ];
+
+        // Initialize variables
+        let currentQuestion = 0;
+        let userPoints = {
+            relaxed: 0,
+            social: 0,
+            adventurous: 0,
+            foodie: 0,
+            playful: 0,
+            wise: 0
+        };
+
+        // DOM elements
+        const introContainer = document.getElementById('intro-container');
+        const quizContainer = document.getElementById('quiz-container');
+        const resultContainer = document.getElementById('result-container');
+        const startBtn = document.getElementById('start-btn');
+        const questionNumber = document.getElementById('question-number');
+        const questionText = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const progressBar = document.getElementById('progress-bar');
+        const resultTitle = document.getElementById('result-title');
+        const resultImage = document.getElementById('result-image');
+        const resultDescription = document.getElementById('result-description');
+        const restartBtn = document.getElementById('restart-btn');
+
+        // Event listeners
+        startBtn.addEventListener('click', startQuiz);
+        restartBtn.addEventListener('click', restartQuiz);
+
+        // Start the quiz
+        function startQuiz() {
+            introContainer.classList.add('hidden');
+            quizContainer.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        // Load a question
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            questionNumber.textContent = `Question ${currentQuestion + 1}/${questions.length}`;
+            questionText.textContent = question.question;
+            
+            // Update progress bar
+            const progress = ((currentQuestion) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+            
+            // Clear previous options
+            optionsContainer.innerHTML = '';
+            
+            // Add new options
+            question.options.forEach((option, index) => {
+                const button = document.createElement('button');
+                button.className = 'btn-option py-4 px-6 rounded-lg text-lg font-medium hover:shadow-lg';
+                button.textContent = option.text;
+                button.addEventListener('click', () => selectOption(option));
+                optionsContainer.appendChild(button);
+            });
+        }
+
+        // Handle option selection
+        function selectOption(option) {
+            // Add points from selected option
+            Object.keys(option.points).forEach(trait => {
+                userPoints[trait] += option.points[trait];
+            });
+            
+            // Move to next question or show result
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        // Calculate and show result
+        function showResult() {
+            quizContainer.classList.add('hidden');
+            resultContainer.style.display = 'block';
+            
+            // Find dominant trait
+            const dominantTrait = Object.keys(userPoints).reduce((a, b) => 
+                userPoints[a] > userPoints[b] ? a : b
+            );
+            
+            // Map traits to results
+            const traitToResult = {
+                relaxed: results[0],    // Zen Capybara
+                social: results[1],     // Social Butterfly Capybara
+                adventurous: results[2], // Adventurous Capybara
+                foodie: results[3],     // Foodie Capybara
+                playful: results[4],    // Playful Capybara
+                wise: results[5]        // Wise Capybara
+            };
+            
+            // Handle tied scores by using a secondary trait or randomizing between tied options
+            let secondaryTrait;
+            const maxScore = userPoints[dominantTrait];
+            const tiedTraits = Object.keys(userPoints).filter(trait => userPoints[trait] === maxScore);
+            
+            // If there's a tie, choose randomly between tied traits
+            const selectedTrait = tiedTraits.length > 1 
+                ? tiedTraits[Math.floor(Math.random() * tiedTraits.length)] 
+                : dominantTrait;
+            
+            // Set result content
+            const result = traitToResult[selectedTrait] || results[0];
+            resultTitle.textContent = result.title;
+            resultDescription.textContent = result.description;
+            resultImage.alt = result.title;
+            // For the actual implementation, you would replace this placeholder with the actual image path
+             resultImage.src = `assets/capybaras/${result.id}.jpg`;
+        }
+
+        // Share result function
+        function shareResult() {
+            const resultText = `${resultTitle.textContent} - ${resultDescription.textContent.slice(0, 100)}...`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: 'My Capybara Quiz Result',
+                    text: resultText,
+                    url: window.location.href
+                })
+                .catch(error => {
+                    console.error('Error sharing:', error);
+                    alert('Could not share result. Try copying the link manually.');
+                });
+            } else {
+                // Fallback for browsers that don't support Web Share API
+                prompt('Copy this link to share your result:', window.location.href);
+            }
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            // Reset variables
+            currentQuestion = 0;
+            userPoints = {
+                relaxed: 0,
+                social: 0,
+                adventurous: 0,
+                foodie: 0,
+                playful: 0,
+                wise: 0
+            };
+            
+            // Reset UI
+            resultContainer.style.display = 'none';
+            introContainer.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
